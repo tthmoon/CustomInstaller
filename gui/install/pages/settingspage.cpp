@@ -1,6 +1,7 @@
 #include "settingspage.h"
 #include "ui_settingspage.h"
 #include <QDebug>
+#include <QProcess>
 
 SettingsPage::SettingsPage(DataProvider* data_provider, QWidget *parent) :
   BasePage(parent),
@@ -26,10 +27,11 @@ bool SettingsPage::validatePage(){
   data_provider_->installer_.folders_.work_path_ = ui->le_path_to_work->text();
   data_provider_->installer_.folders_.tar_path_  = ui->le_path_to_tar->text();
 
-  data_provider_->installer_.if_clear_base_dir_ = ui->cb_if_clear_base->isChecked();
+  data_provider_->installer_.if_clear_base_dir_  = ui->cb_if_clear_base->isChecked();
 
   data_provider_->save();
-  qDebug() <<"aaa";
+
+
   return true;
 }
 

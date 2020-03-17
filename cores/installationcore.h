@@ -12,7 +12,7 @@ class InstallationCore
 {
   Q_OBJECT
 signals:
-  instalSuccess();
+  installSuccess();
 public:
   explicit InstallationCore(DataProvider* data_provider);
   void quit();

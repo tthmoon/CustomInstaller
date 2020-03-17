@@ -17,6 +17,8 @@ public:
   ~InstallProcessPage();
 
   void initializePage();
+private slots:
+  void slotGoToFinishPage();
 private:
   Ui::InstallProcessPage *ui;
   DataProvider* data_provider_;

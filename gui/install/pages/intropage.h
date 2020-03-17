@@ -15,6 +15,7 @@ public:
   explicit IntroPage(QWidget *parent = 0);
   ~IntroPage();
 
+  void initializePage();
 private:
   Ui::IntroPage *ui;
 };

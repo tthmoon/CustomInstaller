@@ -46,7 +46,14 @@ SOURCES += main.cpp\
     gui/install/pages/addingstartmenupage.cpp \
     gui/install/pages/readyforinstallpage.cpp \
     gui/install/pages/installprocesspage.cpp \
-    cores/installationcore.cpp
+    cores/installationcore.cpp \
+    gui/install/pages/finishpage.cpp \
+    cores/algorithm/installalgorithm.cpp \
+    cores/algorithm/process.cpp \
+    system/system.cpp \
+    cores/algorithm/database.cpp \
+    cores/algorithm/files.cpp \
+    cores/algorithm/folders.cpp
 
 HEADERS  += installer.h \
     gui/basepage.h \
@@ -63,7 +70,14 @@ HEADERS  += installer.h \
     gui/install/pages/readyforinstallpage.h \
     gui/install/pages/installprocesspage.h \
     cores/installationcore.h \
-    names.h
+    names.h \
+    gui/install/pages/finishpage.h \
+    cores/algorithm/installalgorithm.h \
+    cores/algorithm/process.h \
+    system/system.h \
+    cores/algorithm/database.h \
+    cores/algorithm/files.h \
+    cores/algorithm/folders.h
 
 FORMS += \
     gui/install/pages/intropage.ui \
@@ -71,7 +85,8 @@ FORMS += \
     gui/install/pages/settingspage.ui \
     gui/install/pages/addingstartmenupage.ui \
     gui/install/pages/readyforinstallpage.ui \
-    gui/install/pages/installprocesspage.ui
+    gui/install/pages/installprocesspage.ui \
+    gui/install/pages/finishpage.ui
 
 RESOURCES += \
     resources.qrc

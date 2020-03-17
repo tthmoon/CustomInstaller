@@ -30,3 +30,9 @@ InstallProcessPage* PagesManager::getInstallProcessPage(DataProvider* data_provi
   return page;
 }
 
+FinishPage* PagesManager::getFinishPage(){
+  FinishPage* page = new FinishPage();
+  return page;
+}
+
+

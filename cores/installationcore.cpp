@@ -54,14 +54,6 @@ void InstallationCore::tryToCreateDir(QString path)
 void InstallationCore::run(){
   qDebug() << "rtest";
 
-  qDebug() << "Пересоздание папочек";
-  tryToCreateDir(data_provider_->installer_.folders_.program_path_);
-  tryToCreateDir(data_provider_->installer_.folders_.work_path_);
-  tryToCreateDir(data_provider_->installer_.folders_.base_path_);
-  tryToCreateDir(data_provider_->installer_.folders_.tar_path_);
-  tryToCreateDir( QDir::toNativeSeparators(data_provider_->installer_.folders_.base_path_ + "\\data") );
-  tryToCreateDir( QDir::toNativeSeparators(data_provider_->installer_.folders_.base_path_ + "\\uploads") );
-
   qDebug() <<"стоп сервиса";
   QProcess db_service;
   db_service.start(QDir::toNativeSeparators(qgetenv("windir") + "\\system32\\net") + " stop " + INFO::BASE_INFO::SERVICE_NAME);
@@ -72,6 +64,14 @@ void InstallationCore::run(){
     + INFO::BASE_INFO::SERVICE_NAME
   );
   db_service.waitForFinished();
+
+  qDebug() << "Пересоздание папочек";
+  tryToCreateDir(data_provider_->installer_.folders_.program_path_);
+  tryToCreateDir(data_provider_->installer_.folders_.work_path_);
+  tryToCreateDir(data_provider_->installer_.folders_.base_path_);
+  tryToCreateDir(data_provider_->installer_.folders_.tar_path_);
+  tryToCreateDir( QDir::toNativeSeparators(data_provider_->installer_.folders_.base_path_ + "\\data") );
+  tryToCreateDir( QDir::toNativeSeparators(data_provider_->installer_.folders_.base_path_ + "\\uploads") );
 
   qDebug() << "нужна проверка на наличие архива";
   QZipReader* zip = new QZipReader(QDir::currentPath() + QDir::separator() + "data" + QDir::separator() + INFO::FILES::BASE_ARCHIVE);
@@ -107,6 +107,14 @@ void InstallationCore::run(){
   appendToFile(data_provider_->installer_.folders_.base_path_ + "\\" + INFO::FILES::BASE_INI, "[client]");
   appendToFile(data_provider_->installer_.folders_.base_path_ + "\\" + INFO::FILES::BASE_INI, "port=" + INFO::BASE_INFO::BASE_PORT);
 
+  db_service.start(
+    addCmdCommas( QDir::toNativeSeparators(data_provider_->installer_.folders_.program_path_+ "\\Database\\bin\\mysqld") )
+    + " --defaults-file="
+    + addCmdCommas( QDir::toNativeSeparators(data_provider_->installer_.folders_.base_path_ + QDir::separator() + INFO::FILES::BASE_INI))
+    + " --initialize-insecure --console"
+  );
+   db_service.waitForFinished();
+
   qDebug() << "установка сервиса";
 
   QString temp_sql_path = QDir::toNativeSeparators(data_provider_->installer_.folders_.program_path_ + "\\pre\\install\\sql\\");
@@ -128,29 +136,24 @@ void InstallationCore::run(){
   db_service.start(QDir::toNativeSeparators(qgetenv("windir") + "\\system32\\net") + " start " + INFO::BASE_INFO::SERVICE_NAME);
   qDebug() <<QDir::toNativeSeparators(qgetenv("windir") + "\\system32\\net") + " start " + INFO::BASE_INFO::SERVICE_NAME;
   db_service.waitForFinished();
+  qDebug() << db_service.readAllStandardOutput();
+   qDebug() << db_service.readAllStandardError();
 
 
   qDebug() << "Database Data Init";
 
   auto addProceduresPack = [&](const QString& file_name)
   {
+    db_service.setStandardInputFile(temp_sql_path + file_name);
     db_service.start(
-      sql_path
-      + " --host=localhost --port="
-      + INFO::BASE_INFO::BASE_PORT
-      + " -u root --password="
-      + INFO::BASE_INFO::BASE_PASS
-      + " < "
-      + addCmdCommas(temp_sql_path + file_name)
+        sql_path
+        + " --host=localhost --port="
+        + INFO::BASE_INFO::BASE_PORT
+        + " --user=root --password="
+        + addCmdCommas(INFO::BASE_INFO::BASE_PASS)
     );
     db_service.waitForFinished();
-    qDebug() << sql_path
-                + " --host=localhost --port="
-                + INFO::BASE_INFO::BASE_PORT
-                + " -u root --password="
-                + INFO::BASE_INFO::BASE_PASS
-                + " < "
-                + addCmdCommas(temp_sql_path + file_name);
+    qDebug() <<  db_service.readAllStandardOutput();
   };
 
   db_service.start(
@@ -158,10 +161,18 @@ void InstallationCore::run(){
     + " --host=localhost --port="
     + INFO::BASE_INFO::BASE_PORT
     + " --user=root --password=\"\" password "
-    + INFO::BASE_INFO::BASE_PASS
+    +  addCmdCommas(INFO::BASE_INFO::BASE_PASS)
   );
   db_service.waitForFinished();
+  qDebug() << addCmdCommas( QDir::toNativeSeparators(QDir::toNativeSeparators(data_provider_->installer_.folders_.program_path_ + "\\Database\\bin\\mysqladmin")))
+              + " --host=localhost --port="
+              + INFO::BASE_INFO::BASE_PORT
+              + " --user=root --password=\"\" password "
+              +  addCmdCommas(INFO::BASE_INFO::BASE_PASS);
+  qDebug() <<db_service.readAllStandardOutput();
 
+//  db_service.start("cmd", QStringList() << "C:\\Users\\kursakov\\Documents\\serverVAPA-335\\parkona\\installer\\sv.bat");
+//  db_service.waitForFinished();
   addProceduresPack("create.sql");
   addProceduresPack("tables.sql");
   addProceduresPack("db_config.sql");
@@ -182,9 +193,6 @@ void InstallationCore::run(){
   vcredist.waitForFinished(60000);
 
 
-  if (data_provider_->installer_.if_clear_base_dir_){
-
-  }
-  emit instalSuccess();
+  emit installSuccess();
 
 }

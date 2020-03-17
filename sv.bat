@@ -1,0 +1,3 @@
+"C:\\Program Files (x86)\\Simicon Tools\\Database\\bin\\mysql" --host=localhost --port=3311 -u root --password="hF7L-@2p3^qBJ_6&$sT" < "C:\\Program Files (x86)\\Simicon Tools\\pre\\install\\sql\\create.sql"
+"C:\\Program Files (x86)\\Simicon Tools\\Database\\bin\\mysql" --host=localhost --port=3311 -u root --password="hF7L-@2p3^qBJ_6&$sT" < "C:\\Program Files (x86)\\Simicon Tools\\pre\\install\\sql\\tables.sql"
+pause

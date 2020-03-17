@@ -8,6 +8,7 @@
 #include "pages/addingstartmenupage.h"
 #include "pages/readyforinstallpage.h"
 #include "pages/installprocesspage.h"
+#include "pages/finishpage.h"
 
 class PagesManager
 {
@@ -19,6 +20,7 @@ public:
   ReadyForInstallPage *getReadyForInstallPage();
 //  InstallProcessPage *getInstallProcessPage(DataProvider *data_provider);
   InstallProcessPage *getInstallProcessPage(DataProvider *data_provider, InstallationCore *core);
+  FinishPage *getFinishPage();
 };
 
 #endif // PAGESMANAGER_H

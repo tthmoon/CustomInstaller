@@ -25,6 +25,7 @@ int Installer::run(int argc, char *argv[]){
   wizard.addPage(pages_manager.getAddingStartMenuPage(&data_provider));
   wizard.addPage(pages_manager.getReadyForInstallPage());
   wizard.addPage(pages_manager.getInstallProcessPage(&data_provider, core));
+  wizard.addPage(pages_manager.getFinishPage());
 
 
   wizard.show();
