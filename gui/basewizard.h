@@ -9,6 +9,8 @@ class BaseWizard : public QWizard
   Q_OBJECT
 public:
   BaseWizard(QWidget* parent);
+private slots:
+  void slotCancelEvent();
 };
 
 #endif // BASEWIZARD_H

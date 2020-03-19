@@ -1,55 +1,70 @@
 #include "database.h"
 
-DataBase::DataBase(const QString* sql_path, const QString* db_path)
-  : sql_path_ {sql_path},
-    db_path_ {db_path},
-    system_name_ {getPrettyOsName()}
+#include <QDebug>
+
+DataBase::DataBase(QString* sql_path, QString* db_path)
 {
+   ptr_sql_path_ = sql_path;
+   ptr_db_path_ = db_path;
+   system_name_ = System::getPrettyOsName();
 }
 
-QString DataBase::addCmdCommas(QString string)
+QString DataBase::addCmdCommas(const QString& string)
 {
   return "\"" + string + "\"";
 }
 
 
-void DataBase::removeService(){
+void DataBase::removeService(const QString& service_name){
   QProcess db;
   if (system_name_ == SystemNames::WINDOWS){
     db.start(
-        addCmdCommas( QDir::toNativeSeparators(sql_path_ + "\\Database\\bin\\mysqld") )
+        addCmdCommas( QDir::toNativeSeparators(*ptr_sql_path_ + "\\Database\\bin\\mysqld") )
       + " --remove "
-      + INFO::BASE_INFO::SERVICE_NAME
+      + service_name
     );
     db.waitForFinished();
   }
 }
 
-void DataBase::addService(){
+void DataBase::addService(const QString& service_name, const QString& ini_path){
   QProcess db;
   if (system_name_ == SystemNames::WINDOWS){
-      db.start(
-          addCmdCommas( QDir::toNativeSeparators(sql_path_ + "\\Database\\bin\\mysqld") )
-        + " --install "
-        + INFO::BASE_INFO::SERVICE_NAME
-        + " --defaults-file="
-        + addCmdCommas( QDir::toNativeSeparators(db_path_ + QDir::separator() + INFO::FILES::BASE_INI))
-      );
+    db.start(
+        addCmdCommas( QDir::toNativeSeparators(*ptr_sql_path_ + "\\Database\\bin\\mysqld") )
+      + " --install "
+      + service_name
+      + " --defaults-file="
+      + addCmdCommas(ini_path)
+    );
     db.waitForFinished();
   }
 }
 
-void DataBase::addUserToDB(){
+void DataBase::initializeINI(const QString& ini_path){
   QProcess db;
   if (system_name_ == SystemNames::WINDOWS){
     db.start(
-        addCmdCommas( QDir::toNativeSeparators(sql_path_ + "\\Database\\bin\\mysqladmin") )
+        addCmdCommas( QDir::toNativeSeparators(*ptr_sql_path_ + "\\Database\\bin\\mysqld") )
+      + " --defaults-file="
+      + addCmdCommas(ini_path)
+      + " --initialize-insecure --console"
+    );
+    db.waitForFinished();
+  }
+}
+
+void DataBase::addUserToDB(const QString& user, const QString& pass){
+  QProcess db;
+  if (system_name_ == SystemNames::WINDOWS){
+    db.start(
+        addCmdCommas( QDir::toNativeSeparators(*ptr_sql_path_ + "\\Database\\bin\\mysqladmin") )
       + " --host=localhost --port="
       + INFO::BASE_INFO::BASE_PORT
       + " --user="
-      + addCmdCommas(INFO::BASE_INFO::BASE_USER)
+      + addCmdCommas(user)
       + " --password=\"\" password "
-      + addCmdCommas(INFO::BASE_INFO::BASE_PASS)
+      + addCmdCommas(pass)
     );
     db.waitForFinished();
   }
@@ -60,7 +75,7 @@ void DataBase::executeSqlFile(const QString& sql_file_path){
   if (system_name_ == SystemNames::WINDOWS){
     db.setStandardInputFile(sql_file_path);
     db.start(
-        sql_path
+        addCmdCommas( QDir::toNativeSeparators(*ptr_sql_path_ + "\\Database\\bin\\mysql" ))
       + " --host=localhost --port="
       + INFO::BASE_INFO::BASE_PORT
       + " --user="
@@ -69,5 +84,12 @@ void DataBase::executeSqlFile(const QString& sql_file_path){
       + addCmdCommas(INFO::BASE_INFO::BASE_PASS)
     );
     db.waitForFinished();
+    qDebug()<< QDir::toNativeSeparators(*ptr_sql_path_ + "\\Database\\bin\\mysql")
+               + " --host=localhost --port="
+               + INFO::BASE_INFO::BASE_PORT
+               + " --user="
+               + addCmdCommas(INFO::BASE_INFO::BASE_USER)
+               + " --password="
+               + addCmdCommas(INFO::BASE_INFO::BASE_PASS);
   }
 }

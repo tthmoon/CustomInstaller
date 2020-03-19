@@ -14,8 +14,8 @@ public:
   System();
   static SystemNames getPrettyOsName();
 private:
-  QString getOsName();
-  QString getOsArch();
+  static QString getOssName();
+  static QString getOsArch();
 };
 
 #endif // SYSTEM_H

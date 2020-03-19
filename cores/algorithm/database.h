@@ -12,17 +12,18 @@ using SystemNames = System::SystemNames;
 class DataBase
 {
 public:
-  explicit DataBase(const QString* sql_path, const QString* db_path);
+  explicit DataBase(QString* sql_path, QString* db_path);
 
-  void removeService();
-  void addService();
-  void addUserToDB();
   void executeSqlFile(const QString &sql_file_path);
+  void removeService(const QString &service_name);
+  void addUserToDB(const QString &user, const QString &pass);
+  void addService(const QString &service_name, const QString &ini_path);
+  void initializeINI(const QString &ini_path);
 private:
+  QString* ptr_sql_path_;
+  QString* ptr_db_path_;
   SystemNames system_name_;
-  QString* sql_path_ = Q_NULLPTR;
-  QString* db_path_ = Q_NULLPTR;
-  QString addCmdCommas(QString string);
+  QString addCmdCommas(const QString& string);
 };
 
 #endif // DATABASE_H

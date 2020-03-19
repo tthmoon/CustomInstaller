@@ -1,8 +1,8 @@
 #include "process.h"
 
 Process::Process()
+  : system_name_ {System::getPrettyOsName()}
 {
-  system_name_ {getPrettyOsName()};
 }
 
 void Process::killProcess(const QString& process_name){

@@ -13,6 +13,8 @@ class InstallationCore
   Q_OBJECT
 signals:
   installSuccess();
+  successStep(QString step_result);
+  numberOfEvents(int number);
 public:
   explicit InstallationCore(DataProvider* data_provider);
   void quit();
@@ -24,9 +26,6 @@ protected:
 private:
   DataProvider* data_provider_;
   bool work_is_enable_;
-  QString addCmdCommas(QString string);
-  void appendToFile(QString file_path, QString txt);
-  void tryToCreateDir(QString path);
 };
 
 #endif // INSTALLATIONCORE_H

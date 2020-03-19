@@ -8,6 +8,7 @@
 
 #include "qzipreader_p.h"
 #include "qzipwriter_p.h"
+#include "algorithm/installalgorithm.h"
 
 
 InstallationCore::InstallationCore(DataProvider* data_provider)
@@ -26,172 +27,90 @@ void InstallationCore::quit()
   work_is_enable_ = false;
 }
 
-QString InstallationCore::addCmdCommas(QString string)
-{
-  return "\"" + string + "\"";
-}
-
-
-void InstallationCore::appendToFile(QString file_path, QString txt)
-{
-  QFile file_a(file_path);
-  if(file_a.open(QIODevice::Append|QIODevice::Text)){
-      QTextStream outLog(&file_a);
-      outLog << (txt + "\n");
-  }
-  file_a.close();
-}
-
-void InstallationCore::tryToCreateDir(QString path)
-{
-  QDir qdir(path);
-  if (qdir.exists()){
-    qdir.removeRecursively();
-  }
- qdir.mkpath(const_cast<QString&>(path));
-}
-
 void InstallationCore::run(){
-  qDebug() << "rtest";
 
-  qDebug() <<"стоп сервиса";
-  QProcess db_service;
-  db_service.start(QDir::toNativeSeparators(qgetenv("windir") + "\\system32\\net") + " stop " + INFO::BASE_INFO::SERVICE_NAME);
-  db_service.waitForFinished();
-  db_service.start(
-    addCmdCommas( QDir::toNativeSeparators(data_provider_->installer_.folders_.program_path_ + "\\Database\\bin\\mysqld") )
-    + " --remove "
-    + INFO::BASE_INFO::SERVICE_NAME
-  );
-  db_service.waitForFinished();
+  emit numberOfEvents(10);
+  InstallAlgorithm* install_algorithm = new InstallAlgorithm(&data_provider_->installer_.folders_.program_path_, &data_provider_->installer_.folders_.base_path_);
+  emit successStep(tr("Start of installation..."));
 
-  qDebug() << "Пересоздание папочек";
-  tryToCreateDir(data_provider_->installer_.folders_.program_path_);
-  tryToCreateDir(data_provider_->installer_.folders_.work_path_);
-  tryToCreateDir(data_provider_->installer_.folders_.base_path_);
-  tryToCreateDir(data_provider_->installer_.folders_.tar_path_);
-  tryToCreateDir( QDir::toNativeSeparators(data_provider_->installer_.folders_.base_path_ + "\\data") );
-  tryToCreateDir( QDir::toNativeSeparators(data_provider_->installer_.folders_.base_path_ + "\\uploads") );
+  QString temp_ini_path = data_provider_->installer_.folders_.program_path_ + QDir::toNativeSeparators("\\pre\\install\\") + INFO::FILES::BASE_INI;
+  QString ini_path = data_provider_->installer_.folders_.base_path_ + QDir::separator() + INFO::FILES::BASE_INI;
+  QString temp_sql_path = QDir::toNativeSeparators(data_provider_->installer_.folders_.program_path_ + QDir::toNativeSeparators("\\pre\\install\\sql\\"));
 
-  qDebug() << "нужна проверка на наличие архива";
-  QZipReader* zip = new QZipReader(QDir::currentPath() + QDir::separator() + "data" + QDir::separator() + INFO::FILES::BASE_ARCHIVE);
-  zip->extractAll( data_provider_->installer_.folders_.program_path_);
-  zip->close();
+  emit successStep(tr("Process mysqld stoping..."));
+  install_algorithm->process_->killProcess("mysqld.exe");
 
-  qDebug() << "переместить ини и заполнить";
-  QFile distIni (data_provider_->installer_.folders_.base_path_ + "\\" + INFO::FILES::BASE_INI);
-  if (distIni.exists()){
-    distIni.remove();
+  emit successStep(tr("Process mysqld stoping..."));
+  install_algorithm->process_->stopService(INFO::BASE_INFO::SERVICE_NAME);
+  install_algorithm->database_->removeService(INFO::BASE_INFO::SERVICE_NAME);
+
+  emit successStep(tr("Folders recreating..."));
+
+  install_algorithm->folders_->tryToCreateDirWithCleanup(data_provider_->installer_.folders_.program_path_);
+  install_algorithm->folders_->tryToCreateDir(data_provider_->installer_.folders_.work_path_);
+  install_algorithm->folders_->tryToCreateDir(data_provider_->installer_.folders_.tar_path_);
+  if (data_provider_->installer_.if_clear_base_dir_){
+    install_algorithm->folders_->tryToCreateDirWithCleanup(data_provider_->installer_.folders_.base_path_);
   }
-  QFile::copy(
-    data_provider_->installer_.folders_.program_path_ + "\\pre\\install\\" + INFO::FILES::BASE_INI,
-    data_provider_->installer_.folders_.base_path_ + "\\" + INFO::FILES::BASE_INI
+  else{
+    install_algorithm->folders_->tryToCreateDir(data_provider_->installer_.folders_.base_path_);
+  }
+  install_algorithm->folders_->tryToCreateDir(data_provider_->installer_.folders_.base_path_ + QDir::separator() + "data");
+  install_algorithm->folders_->tryToCreateDir(data_provider_->installer_.folders_.base_path_ + QDir::separator() + "uploads");
+
+
+  emit successStep(tr("Extracting data..."));
+  install_algorithm->files_->extractZip(
+    QDir::currentPath() + QDir::separator() + "data" + QDir::separator() + INFO::FILES::BASE_ARCHIVE,
+    data_provider_->installer_.folders_.program_path_
   );
 
-//  appendToFile(data_provider_->installer_.folders_.base_path_ + "\\" + INFO::FILES::BASE_INI, "port=" + INFO::BASE_INFO::BASE_PORT);
-//  appendToFile(data_provider_->installer_.folders_.base_path_ + "\\" + INFO::FILES::BASE_INI, "#	Path ");
-//  appendToFile(
-//        data_provider_->installer_.folders_.base_path_ + "\\" + INFO::FILES::BASE_INI,
-//        "basedir=" + QDir::toNativeSeparators( addCmdCommas(data_provider_->installer_.folders_.program_path_ + "\\Database") )
-//  );
-//  appendToFile(
-//        data_provider_->installer_.folders_.base_path_ + "\\" + INFO::FILES::BASE_INI,
-//        "datadir=" + QDir::toNativeSeparators( addCmdCommas(data_provider_->installer_.folders_.base_path_ + "\\data") )
-//  );
-//  qDebug() << "test";
-//  appendToFile(
-//        data_provider_->installer_.folders_.base_path_ + "\\" + INFO::FILES::BASE_INI,
-//        "secure-file-priv=" + QDir::toNativeSeparators( addCmdCommas(data_provider_->installer_.folders_.base_path_ + "\\uploads") )
-//  );
-
-  appendToFile(data_provider_->installer_.folders_.base_path_ + "\\" + INFO::FILES::BASE_INI, "[client]");
-  appendToFile(data_provider_->installer_.folders_.base_path_ + "\\" + INFO::FILES::BASE_INI, "port=" + INFO::BASE_INFO::BASE_PORT);
-
-  db_service.start(
-    addCmdCommas( QDir::toNativeSeparators(data_provider_->installer_.folders_.program_path_+ "\\Database\\bin\\mysqld") )
-    + " --defaults-file="
-    + addCmdCommas( QDir::toNativeSeparators(data_provider_->installer_.folders_.base_path_ + QDir::separator() + INFO::FILES::BASE_INI))
-    + " --initialize-insecure --console"
-  );
-   db_service.waitForFinished();
-
-  qDebug() << "установка сервиса";
-
-  QString temp_sql_path = QDir::toNativeSeparators(data_provider_->installer_.folders_.program_path_ + "\\pre\\install\\sql\\");
-  QString sql_path = addCmdCommas( QDir::toNativeSeparators(data_provider_->installer_.folders_.program_path_ + "\\Database\\bin\\mysql"));
-
-  db_service.start(
-    addCmdCommas( QDir::toNativeSeparators(data_provider_->installer_.folders_.program_path_+ "\\Database\\bin\\mysqld") )
-    + " --install "
-    + INFO::BASE_INFO::SERVICE_NAME
-    + " --defaults-file="
-    + addCmdCommas( QDir::toNativeSeparators(data_provider_->installer_.folders_.base_path_ + QDir::separator() + INFO::FILES::BASE_INI))
-  );
-  qDebug() << addCmdCommas( QDir::toNativeSeparators(data_provider_->installer_.folders_.program_path_+ "\\Database\\bin\\mysqld") )
-              + " --install "
-              + INFO::BASE_INFO::SERVICE_NAME
-              + " --defaults-file="
-              + addCmdCommas( QDir::toNativeSeparators(data_provider_->installer_.folders_.base_path_ + QDir::separator() + INFO::FILES::BASE_INI));
-  db_service.waitForFinished();
-  db_service.start(QDir::toNativeSeparators(qgetenv("windir") + "\\system32\\net") + " start " + INFO::BASE_INFO::SERVICE_NAME);
-  qDebug() <<QDir::toNativeSeparators(qgetenv("windir") + "\\system32\\net") + " start " + INFO::BASE_INFO::SERVICE_NAME;
-  db_service.waitForFinished();
-  qDebug() << db_service.readAllStandardOutput();
-   qDebug() << db_service.readAllStandardError();
+  emit successStep(tr("Init files forming..."));
+  install_algorithm->files_->copyFile(temp_ini_path, ini_path);
 
 
-  qDebug() << "Database Data Init";
+  install_algorithm->files_->appendToFile(ini_path, "[client]");
+  install_algorithm->files_->appendToFile(ini_path, "port=" + INFO::BASE_INFO::BASE_PORT);
 
-  auto addProceduresPack = [&](const QString& file_name)
-  {
-    db_service.setStandardInputFile(temp_sql_path + file_name);
-    db_service.start(
-        sql_path
-        + " --host=localhost --port="
-        + INFO::BASE_INFO::BASE_PORT
-        + " --user=root --password="
-        + addCmdCommas(INFO::BASE_INFO::BASE_PASS)
-    );
-    db_service.waitForFinished();
-    qDebug() <<  db_service.readAllStandardOutput();
-  };
+  install_algorithm->database_->initializeINI(ini_path);
 
-  db_service.start(
-    addCmdCommas( QDir::toNativeSeparators(QDir::toNativeSeparators(data_provider_->installer_.folders_.program_path_ + "\\Database\\bin\\mysqladmin")))
-    + " --host=localhost --port="
-    + INFO::BASE_INFO::BASE_PORT
-    + " --user=root --password=\"\" password "
-    +  addCmdCommas(INFO::BASE_INFO::BASE_PASS)
-  );
-  db_service.waitForFinished();
-  qDebug() << addCmdCommas( QDir::toNativeSeparators(QDir::toNativeSeparators(data_provider_->installer_.folders_.program_path_ + "\\Database\\bin\\mysqladmin")))
-              + " --host=localhost --port="
-              + INFO::BASE_INFO::BASE_PORT
-              + " --user=root --password=\"\" password "
-              +  addCmdCommas(INFO::BASE_INFO::BASE_PASS);
-  qDebug() <<db_service.readAllStandardOutput();
 
-//  db_service.start("cmd", QStringList() << "C:\\Users\\kursakov\\Documents\\serverVAPA-335\\parkona\\installer\\sv.bat");
-//  db_service.waitForFinished();
-  addProceduresPack("create.sql");
-  addProceduresPack("tables.sql");
-  addProceduresPack("db_config.sql");
-  addProceduresPack("procedures\\general.sql");
-  addProceduresPack("procedures\\services.sql");
-  addProceduresPack("procedures\\stats.sql");
-  addProceduresPack("procedures\\targets_add.sql");
-  addProceduresPack("procedures\\targets_process_allvehicles.sql");
-  addProceduresPack("procedures\\targets_process_violations.sql");
-  addProceduresPack("procedures\\targets_push.sql");
-  addProceduresPack("procedures\\device_serials.sql");
+  emit successStep(tr("Service start..."));
 
-  qDebug() << "установка доп по";
+  install_algorithm->database_->addService(INFO::BASE_INFO::SERVICE_NAME, ini_path);
+  install_algorithm->process_->startService(INFO::BASE_INFO::SERVICE_NAME);
+
+
+  emit successStep(tr("Init database data..."));
+
+  install_algorithm->database_->addUserToDB(INFO::BASE_INFO::BASE_USER, INFO::BASE_INFO::BASE_PASS);
+
+  install_algorithm->database_->executeSqlFile(temp_sql_path + "create.sql");
+  install_algorithm->database_->executeSqlFile(temp_sql_path + "tables.sql");
+  install_algorithm->database_->executeSqlFile(temp_sql_path + "db_config.sql");
+  install_algorithm->database_->executeSqlFile(temp_sql_path + QDir::toNativeSeparators("procedures\\general.sql"));
+  install_algorithm->database_->executeSqlFile(temp_sql_path + QDir::toNativeSeparators("procedures\\services.sql"));
+  install_algorithm->database_->executeSqlFile(temp_sql_path + QDir::toNativeSeparators("procedures\\stats.sql"));
+  install_algorithm->database_->executeSqlFile(temp_sql_path + QDir::toNativeSeparators("procedures\\targets_add.sql"));
+  install_algorithm->database_->executeSqlFile(temp_sql_path + QDir::toNativeSeparators("procedures\\targets_process_allvehicles.sql"));
+  install_algorithm->database_->executeSqlFile(temp_sql_path + QDir::toNativeSeparators("procedures\\targets_process_violations.sql"));
+  install_algorithm->database_->executeSqlFile(temp_sql_path + QDir::toNativeSeparators("procedures\\targets_push.sql"));
+  install_algorithm->database_->executeSqlFile(temp_sql_path + QDir::toNativeSeparators("procedures\\device_serials.sql"));
+
+  emit successStep(tr( "VCREDIST installation..."));
   qDebug() << "нужна проверка на наличие по";
-  QProcess vcredist;
-  QString vsr_path = QDir::toNativeSeparators("\"" + data_provider_->installer_.folders_.program_path_ + "\\pre\\install\\" + INFO::FILES::VCREDIST + "\"");
-  vcredist.start(vsr_path , QStringList() << "/quiet" << "/repair" <<  "/norestart");
-  vcredist.waitForFinished(60000);
-
+  install_algorithm->files_->runApp(
+     data_provider_->installer_.folders_.program_path_ + QDir::toNativeSeparators("\\pre\\install\\") + INFO::FILES::VCREDIST,
+     QStringList() << "/quiet" << "/repair" <<  "/norestart",
+     600000
+  );
+  emit successStep(tr( "Shortcut creating..."));
+  install_algorithm->folders_->createStartMenuEntry(
+     data_provider_->installer_.shortcut_.target_path_,
+     data_provider_->installer_.shortcut_.start_menu_folder_,
+     data_provider_->installer_.shortcut_.link_name_,
+     data_provider_->installer_.shortcut_.shortcut_disription_
+  );
 
   emit installSuccess();
 

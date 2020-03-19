@@ -15,9 +15,12 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="1">
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="lab_finish_instructions">
      <property name="text">
-      <string>TextLabel</string>
+      <string>lab_finish_ instuctions</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

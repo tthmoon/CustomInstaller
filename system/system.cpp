@@ -2,22 +2,22 @@
 
 
 
-QString System::getOsName()
+QString System::getOssName()
 {
-  QSysInfo::productType();
+  return QSysInfo::productType();
 }
 
 QString System::getOsArch()
 {
-  QSysInfo::currentCpuArchitecture();
+  return QSysInfo::currentCpuArchitecture();
 }
 System::SystemNames System::getPrettyOsName()
 {
-  QString os_name {getOsName()};
+  QString os_name {getOssName()};
   if (os_name == "windows") { // Возможность учета архитектуры процессора
-    return SystemNames::WINDOWS
+    return SystemNames::WINDOWS;
   }
   else  { // временный костыль, требуется учет всех возможных ос
-    return SystemNames::LINUX
+    return SystemNames::LINUX;
   }
 }

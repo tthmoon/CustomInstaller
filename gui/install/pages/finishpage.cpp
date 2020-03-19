@@ -6,9 +6,8 @@ FinishPage::FinishPage(QWidget *parent) :
   ui(new Ui::FinishPage)
 {
   ui->setupUi(this);
-  QPixmap pm(":/images/finish");
-  ui->label->setPixmap(pm);
-  ui->label->setScaledContents(true);
+  setTitle(tr("Finish page title"));
+  setSubTitle(" ");
 }
 
 FinishPage::~FinishPage()

@@ -1,5 +1,6 @@
 #ifndef INSTALLPROCESSPAGE_H
 #define INSTALLPROCESSPAGE_H
+#include <QWidget>
 
 #include "../../basepage.h"
 #include "../../../cores/installationcore.h"
@@ -17,8 +18,11 @@ public:
   ~InstallProcessPage();
 
   void initializePage();
+  bool isComplete() const;
 private slots:
   void slotGoToFinishPage();
+  void slotSuccessStep(QString txt);
+  void slotNumberOfEvents(int number);
 private:
   Ui::InstallProcessPage *ui;
   DataProvider* data_provider_;

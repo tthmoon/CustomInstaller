@@ -11,8 +11,7 @@
 class InstallAlgorithm
 {
 public:
-  explicit InstallAlgorithm(const QString& sql_path, const QString& db_path);
-private:
+  explicit InstallAlgorithm(QString* sql_path, QString* db_path);
   Process* process_= Q_NULLPTR;
   DataBase* database_ = Q_NULLPTR;
   Files* files_= Q_NULLPTR;

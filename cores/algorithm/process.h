@@ -7,7 +7,7 @@
 #include <QProcess>
 #include <QDir>
 
-using namespace System;
+using SystemNames = System::SystemNames;
 
 class Process
 {

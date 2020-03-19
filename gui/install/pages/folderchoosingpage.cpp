@@ -2,6 +2,7 @@
 #include "ui_folderchoosingpage.h"
 
 #include <QDebug>
+#include <QDir>
 
 FolderChoosingPage::FolderChoosingPage(
   DataProvider* data_provider,
@@ -31,7 +32,7 @@ void FolderChoosingPage::on_pb_explore_clicked()
 }
 
 bool FolderChoosingPage::validatePage(){
-  data_provider_->installer_.folders_.program_path_ = ui->le_folder->text();
+  data_provider_->installer_.folders_.program_path_ = QDir::toNativeSeparators(ui->le_folder->text());
   data_provider_->save();
   qDebug() <<"aaa";
   return true;

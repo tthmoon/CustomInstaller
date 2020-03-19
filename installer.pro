@@ -18,7 +18,7 @@ CONFIG += resources_big
 TARGET = installer
 
 
-#LIBS += -lole32 -luuid
+LIBS += -lole32 -luuid
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
@@ -53,7 +53,8 @@ SOURCES += main.cpp\
     system/system.cpp \
     cores/algorithm/database.cpp \
     cores/algorithm/files.cpp \
-    cores/algorithm/folders.cpp
+    cores/algorithm/folders.cpp \
+    gui/dialogforms.cpp
 
 HEADERS  += installer.h \
     gui/basepage.h \
@@ -77,7 +78,8 @@ HEADERS  += installer.h \
     system/system.h \
     cores/algorithm/database.h \
     cores/algorithm/files.h \
-    cores/algorithm/folders.h
+    cores/algorithm/folders.h \
+    gui/dialogforms.h
 
 FORMS += \
     gui/install/pages/intropage.ui \
