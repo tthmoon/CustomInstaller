@@ -84,12 +84,6 @@ void DataBase::executeSqlFile(const QString& sql_file_path){
       + addCmdCommas(INFO::BASE_INFO::BASE_PASS)
     );
     db.waitForFinished();
-    qDebug()<< QDir::toNativeSeparators(*ptr_sql_path_ + "\\Database\\bin\\mysql")
-               + " --host=localhost --port="
-               + INFO::BASE_INFO::BASE_PORT
-               + " --user="
-               + addCmdCommas(INFO::BASE_INFO::BASE_USER)
-               + " --password="
-               + addCmdCommas(INFO::BASE_INFO::BASE_PASS);
+
   }
 }

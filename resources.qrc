@@ -5,6 +5,16 @@
         <file alias="images\icon">resources/images/simicon_icon.ico</file>
         <file alias="images\logo">resources/images/simicon_logo.png</file>
         <file alias="images\watermark">resources/images/simicon_watermark.png</file>
-        <file alias="images\finish">resources/images/finish.jpg</file>
+        <file>../server/db/sql/procedures/device_serials.sql</file>
+        <file>../server/db/sql/procedures/general.sql</file>
+        <file>../server/db/sql/procedures/services.sql</file>
+        <file>../server/db/sql/procedures/stats.sql</file>
+        <file>../server/db/sql/procedures/targets_add.sql</file>
+        <file>../server/db/sql/procedures/targets_process_allvehicles.sql</file>
+        <file>../server/db/sql/procedures/targets_process_violations.sql</file>
+        <file>../server/db/sql/procedures/targets_push.sql</file>
+        <file>../server/db/sql/create.sql</file>
+        <file>../server/db/sql/db_config.sql</file>
+        <file>../server/db/sql/tables.sql</file>
     </qresource>
 </RCC>

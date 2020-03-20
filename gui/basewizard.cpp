@@ -3,6 +3,7 @@
 
 #include <QIcon>
 #include <QAbstractButton>
+#include <QDebug>
 
 BaseWizard::BaseWizard(QWidget* parent)
   : QWizard(parent)
@@ -23,6 +24,7 @@ BaseWizard::BaseWizard(QWidget* parent)
 void BaseWizard::slotCancelEvent()
 {
   if (DialogForms::question(tr("Exit installation title"), tr("Exit question?"))) {
+    qDebug()<< "classic";
     reject();
   }
 }
